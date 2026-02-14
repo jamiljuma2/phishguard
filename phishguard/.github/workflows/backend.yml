@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint Python
+        run: |
+          pip install flake8
+          flake8 .
+      - name: Check model file
+        run: |
+          test -f phishing_model.pkl
+
+      - name: Run backend tests
+        run: |
+          pip install pytest
+          pytest --maxfail=1 --disable-warnings -q
+
+      - name: Deploy backend (Docker)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "Deploy step: build and push Docker image here"
+          # docker build -t ghcr.io/${{ github.repository }}/backend:latest .
+          # echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # docker push ghcr.io/${{ github.repository }}/backend:latest
