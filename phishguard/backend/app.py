@@ -1,11 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import joblib
 from utils import preprocess_text, extract_features
 from history_utils import load_history, add_scan_to_history, get_dashboard_stats
 
-app = Flask(__name__)
+import pathlib
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend', 'dist'))
+app = Flask(__name__, static_folder=FRONTEND_DIST, static_url_path='')
 CORS(app)  # Enable CORS for all routes
 
 
@@ -68,6 +71,18 @@ def get_history():
 @app.route('/dashboard_stats', methods=['GET'])
 def dashboard_stats():
     return jsonify(get_dashboard_stats())
+
+
+# Serve React frontend (index.html) for all non-API routes
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path.startswith(('api', 'predict', 'history', 'dashboard_stats', 'health')):
+        return jsonify({'error': 'Not found'}), 404
+    file_path = os.path.join(FRONTEND_DIST, path)
+    if os.path.exists(file_path) and not os.path.isdir(file_path):
+        return send_from_directory(FRONTEND_DIST, path)
+    return send_from_directory(FRONTEND_DIST, 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
