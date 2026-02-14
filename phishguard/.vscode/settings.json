@@ -1,0 +1,15 @@
+{
+    "python.defaultInterpreterPath": "c:\\hakathon\\phishguard\\backend\\venv\\Scripts\\python.exe",
+    "files.associations": {
+        "*.css": "tailwindcss"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "css.validate": false,
+    "scss.validate": false,
+    "python.analysis.extraPaths": [
+        "c:\\hakathon\\phishguard\\backend",
+        "c:\\hakathon\\phishguard\\backend\\venv\\Lib\\site-packages"
+    ]
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "result": "Legitimate",
+    "confidence": 0.5105157497511124,
+    "heuristics": {
+      "url_count": 0,
+      "suspicious_keyword_count": 3
+    },
+    "email": "",
+    "subject": "",
+    "suspicious_words": [],
+    "id": 1,
+    "timestamp": "2026-02-14T15:29:54.948438"
+  }
+]

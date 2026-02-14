@@ -1,0 +1,115 @@
+import React, { useState, useEffect } from 'react';
+import ReportModal from '../components/ReportModal';
+import { Search, Filter, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
+import api from '../api';
+
+function History() {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [historyData, setHistoryData] = useState([]);
+
+    useEffect(() => {
+        api.get('/history').then(res => setHistoryData(res.data));
+    }, []);
+
+    const filteredData = historyData.filter(item =>
+        (item.subject || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <>
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Scan History</h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">Review your past email analysis reports.</p>
+                    </div>
+
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <div className="relative flex-grow md:flex-grow-0">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search emails..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-4 py-2 w-full md:w-64 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all"
+                            />
+                        </div>
+                        <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <Filter size={18} />
+                            <span>Filter</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Subject / Sender</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Confidence</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                {filteredData.map((item) => (
+                                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${item.result === 'Phishing'
+                                                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
+                                                    : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                                }`}>
+                                                {item.result === 'Phishing' ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}
+                                                {item.result}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <div className="text-sm font-medium text-slate-900 dark:text-white">{item.subject}</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400">{item.email}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full ${item.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                                        style={{ width: `${item.confidence}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-sm text-slate-600 dark:text-slate-300">{item.confidence}%</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                                            {item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                              className="btn-primary px-4 py-1 text-xs"
+                                              onClick={() => {
+                                                setSelectedReport(item);
+                                                setModalOpen(true);
+                                              }}
+                                            >
+                                              View Report
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <ReportModal open={modalOpen} onClose={() => setModalOpen(false)} report={selectedReport} />
+        </>
+    );
+}
+
+export default History;
