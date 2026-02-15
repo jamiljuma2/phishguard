@@ -1,5 +1,22 @@
 [
   {
+    "result": "Phishing",
+    "confidence": 0.5999846325836695,
+    "heuristics": {
+      "url_count": 1,
+      "suspicious_keyword_count": 6
+    },
+    "email": "",
+    "subject": "",
+    "suspicious_words": [
+      "urgent",
+      "verify",
+      "login"
+    ],
+    "id": 2,
+    "timestamp": "2026-02-14T17:35:51.357323"
+  },
+  {
     "result": "Legitimate",
     "confidence": 0.5105157497511124,
     "heuristics": {
