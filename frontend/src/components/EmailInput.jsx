@@ -88,7 +88,9 @@ function EmailInput({ onAnalyze, loading, inputType }) {
                             ) : (
                                 <>
                                     <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                    Analyze Email
+                                    {inputType === 'email' && 'Analyze Email'}
+                                    {inputType === 'sms' && 'Analyze SMS'}
+                                    {inputType === 'url' && 'Analyze URL'}
                                 </>
                             )}
                         </span>
