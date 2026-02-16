@@ -192,7 +192,7 @@ function Dashboard() {
                                                                                                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || 'No Subject'}</p>
                                                                                                 <p className="text-xs text-slate-500">{scan.email || 'Unknown sender'}</p>
                                                                                                 <p className="text-xs text-slate-400 mt-1">Type: {scan.input_type ? scan.input_type.charAt(0).toUpperCase() + scan.input_type.slice(1) : 'Unknown'}</p>
-                                                                                                <p className="text-xs text-slate-400 mt-1">Confidence: {typeof scan.confidence === 'number' ? (scan.confidence * 100).toFixed(1) + '%' : 'N/A'}</p>
+                                                                                                <p className="text-xs text-slate-400 mt-1">Confidence: {typeof scan.confidence === 'number' ? (scan.confidence * 100).toFixed(2) + '%' : 'N/A'}</p>
                                                                                         </div>
                                                                                         <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
                                                                                             setSelectedReport(scan);

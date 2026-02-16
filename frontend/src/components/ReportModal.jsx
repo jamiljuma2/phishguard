@@ -30,7 +30,7 @@ function ReportModal({ open, onClose, report }) {
                   <ul className="text-sm text-slate-700 dark:text-slate-200 space-y-1">
                     <li><span className="font-medium">Type:</span> {report.input_type || report.type || 'N/A'}</li>
                     <li><span className="font-medium">Result:</span> {report.result}</li>
-                    <li><span className="font-medium">Confidence:</span> {typeof report.confidence === 'number' ? (report.confidence * 100).toFixed(1) + '%' : 'N/A'}</li>
+                    <li><span className="font-medium">Confidence:</span> {typeof report.confidence === 'number' ? (report.confidence * 100).toFixed(2) + '%' : 'N/A'}</li>
                     {report.subject && <li><span className="font-medium">Subject:</span> {report.subject}</li>}
                     {report.email && <li><span className="font-medium">Email:</span> {report.email}</li>}
                   </ul>
