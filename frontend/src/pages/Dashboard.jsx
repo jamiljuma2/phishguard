@@ -185,22 +185,23 @@ function Dashboard() {
                                 <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">All Alerts</h3>
                                 <div className="space-y-3">
                                     {stats.recent.length === 0 && <div className="text-slate-500">No alerts found.</div>}
-                                    {stats.recent.map((scan, i) => (
-                                        <div key={scan.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
-                                            <div className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                                            <div>
-                                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || 'No Subject'}</p>
-                                                <p className="text-xs text-slate-500">{scan.email || 'Unknown sender'}</p>
-                                                <p className="text-xs text-slate-400 mt-1">Type: {scan.input_type ? scan.input_type.charAt(0).toUpperCase() + scan.input_type.slice(1) : 'Unknown'}</p>
-                                            </div>
-                                            <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
-                                              setSelectedReport(scan);
-                                              setModalOpen(true);
-                                            }}>
-                                              View Report
-                                            </button>
-                                        </div>
-                                    ))}
+                                                                        {stats.recent.map((scan, i) => (
+                                                                                <div key={scan.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
+                                                                                        <div className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+                                                                                        <div>
+                                                                                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || 'No Subject'}</p>
+                                                                                                <p className="text-xs text-slate-500">{scan.email || 'Unknown sender'}</p>
+                                                                                                <p className="text-xs text-slate-400 mt-1">Type: {scan.input_type ? scan.input_type.charAt(0).toUpperCase() + scan.input_type.slice(1) : 'Unknown'}</p>
+                                                                                                <p className="text-xs text-slate-400 mt-1">Confidence: {typeof scan.confidence === 'number' ? (scan.confidence * 100).toFixed(1) + '%' : 'N/A'}</p>
+                                                                                        </div>
+                                                                                        <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
+                                                                                            setSelectedReport(scan);
+                                                                                            setModalOpen(true);
+                                                                                        }}>
+                                                                                            View Report
+                                                                                        </button>
+                                                                                </div>
+                                                                        ))}
                                 </div>
                             </div>
                         </div>
