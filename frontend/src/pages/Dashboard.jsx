@@ -8,7 +8,16 @@ import api from '../api';
 function Dashboard() {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
-    const [stats, setStats] = useState({ total_scans: 0, phishing: 0, legitimate: 0, recent: [] });
+    const [stats, setStats] = useState({
+        total_scans: 0,
+        phishing_email: 0,
+        phishing_sms: 0,
+        phishing_url: 0,
+        legitimate_email: 0,
+        legitimate_sms: 0,
+        legitimate_url: 0,
+        recent: []
+    });
     const [trendData, setTrendData] = useState([]);
     useEffect(() => {
         api.get('/dashboard_stats').then(res => {
@@ -53,21 +62,47 @@ function Dashboard() {
                     color="blue"
                 />
                 <StatsCard
-                    title="Phishing Detected"
-                    value={stats.phishing}
+                    title="Phishing Emails"
+                    value={stats.phishing_email}
+                    isBad={true}
+                    icon={<AlertTriangle className="text-red-500" />}
+                    color="red"
+                />
+                <StatsCard
+                    title="Phishing SMS"
+                    value={stats.phishing_sms}
+                    isBad={true}
+                    icon={<AlertTriangle className="text-red-500" />}
+                    color="red"
+                />
+                <StatsCard
+                    title="Phishing URLs"
+                    value={stats.phishing_url}
                     isBad={true}
                     icon={<AlertTriangle className="text-red-500" />}
                     color="red"
                 />
                 <StatsCard
                     title="Legitimate Emails"
-                    value={stats.legitimate}
+                    value={stats.legitimate_email}
+                    icon={<CheckCircle className="text-emerald-500" />}
+                    color="emerald"
+                />
+                <StatsCard
+                    title="Legitimate SMS"
+                    value={stats.legitimate_sms}
+                    icon={<CheckCircle className="text-emerald-500" />}
+                    color="emerald"
+                />
+                <StatsCard
+                    title="Legitimate URLs"
+                    value={stats.legitimate_url}
                     icon={<CheckCircle className="text-emerald-500" />}
                     color="emerald"
                 />
                 <StatsCard
                     title="Global Risk Level"
-                    value={stats.phishing > stats.legitimate ? 'High' : 'Low'}
+                    value={stats.phishing_email + stats.phishing_sms + stats.phishing_url > stats.legitimate_email + stats.legitimate_sms + stats.legitimate_url ? 'High' : 'Low'}
                     subtext={stats.total_scans > 0 ? 'System Healthy' : 'No Data'}
                     icon={<Globe className="text-indigo-500" />}
                     color="indigo"
