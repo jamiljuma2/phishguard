@@ -37,22 +37,32 @@ def health_check():
     return jsonify({"status": "healthy", "model_loaded": model is not None})
 
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
-    if not data or 'email_text' not in data:
-        return jsonify({"error": "No email text provided"}), 400
-    email_text = data['email_text']
-    processed_text = preprocess_text(email_text)
-    heuristics = extract_features(email_text)
-    result = {"result": "Unknown", "confidence": 0.0, "heuristics": heuristics, "email": data.get('email', ''), "subject": data.get('subject', '')}
+    if not data or 'text' not in data or 'type' not in data:
+        return jsonify({"error": "Missing required fields: 'text' and 'type'"}), 400
+    input_text = data['text']
+    input_type = data['type']  # 'email', 'sms', or 'url'
+    processed_text = preprocess_text(input_text)
+    heuristics = extract_features(input_text)
+    result = {
+        "result": "Unknown",
+        "confidence": 0.0,
+        "heuristics": heuristics,
+        "input": input_text,
+        "input_type": input_type,
+        "email": data.get('email', ''),
+        "subject": data.get('subject', '')
+    }
     if model:
         try:
             prediction = model.predict([processed_text])[0]
             proba = model.predict_proba([processed_text])[0]
             result['result'] = "Phishing" if prediction == 1 else "Legitimate"
             result['confidence'] = float(max(proba))
-            suspicious_words_found = [word for word in ['urgent', 'verify', 'login'] if word in email_text.lower()]
+            suspicious_words_found = [word for word in ['urgent', 'verify', 'login'] if word in input_text.lower()]
             result['suspicious_words'] = suspicious_words_found
         except Exception as e:
             return jsonify({"error": f"Prediction failed: {e}"}), 500

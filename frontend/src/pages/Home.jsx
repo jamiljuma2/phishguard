@@ -6,24 +6,24 @@ import api from '../api';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
+
 function Home() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [inputType, setInputType] = useState('email'); // 'email', 'sms', 'url'
 
-    const analyzeEmail = async (emailText) => {
+    const analyzeInput = async (inputText) => {
         setLoading(true);
         setError(null);
         setResult(null);
-
         try {
-            const response = await api.post('/predict', { email_text: emailText });
+            const response = await api.post('/predict', { text: inputText, type: inputType });
             setResult(response.data);
-            // In a real app, save to history here or let backend handle it
         } catch (err) {
             console.error(err);
-            setError('Failed to analyze email. Please try again.');
+            setError('Failed to analyze input. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -60,8 +60,32 @@ function Home() {
                 </motion.p>
             </div>
 
-            <div className="max-w-4xl mx-auto">
-                <EmailInput onAnalyze={analyzeEmail} loading={loading} />
+
+            <div className="max-w-4xl mx-auto space-y-4">
+                <div className="flex justify-center gap-4 mb-2">
+                    <button
+                        className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === 'email' ? 'bg-accent text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent'}`}
+                        onClick={() => setInputType('email')}
+                        type="button"
+                    >
+                        Email
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === 'sms' ? 'bg-accent text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent'}`}
+                        onClick={() => setInputType('sms')}
+                        type="button"
+                    >
+                        SMS
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === 'url' ? 'bg-accent text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent'}`}
+                        onClick={() => setInputType('url')}
+                        type="button"
+                    >
+                        URL
+                    </button>
+                </div>
+                <EmailInput onAnalyze={analyzeInput} loading={loading} inputType={inputType} />
             </div>
 
             {error && (

@@ -3,7 +3,8 @@ import { Send, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 
-function EmailInput({ onAnalyze, loading }) {
+
+function EmailInput({ onAnalyze, loading, inputType }) {
     const [text, setText] = useState('');
 
     const handleSubmit = (e) => {
@@ -14,7 +15,13 @@ function EmailInput({ onAnalyze, loading }) {
     };
 
     const handlePasteExample = () => {
-        setText("URGENT: Your account has been suspended! Click here to verify your identity immediately: http://paypal-secure-login.xyz");
+        if (inputType === 'email') {
+            setText("URGENT: Your account has been suspended! Click here to verify your identity immediately: http://paypal-secure-login.xyz");
+        } else if (inputType === 'sms') {
+            setText("[Bank] ALERT: Your card is locked. Visit http://fakebank-login.com to unlock now.");
+        } else if (inputType === 'url') {
+            setText("http://malicious-reset-password.com");
+        }
     };
 
     return (
@@ -31,22 +38,28 @@ function EmailInput({ onAnalyze, loading }) {
                         <div className="flex justify-between items-center px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-2 text-slate-400 text-sm">
                                 <FileText size={16} />
-                                <span className="font-medium">New Scan</span>
+                                <span className="font-medium">New Scan ({inputType.charAt(0).toUpperCase() + inputType.slice(1)})</span>
                             </div>
                             <button
                                 type="button"
                                 onClick={handlePasteExample}
                                 className="text-xs text-accent hover:text-accent-light font-medium transition-colors"
                             >
-                                Paste Example Phishing Email
+                                Paste Example {inputType === 'email' ? 'Phishing Email' : inputType === 'sms' ? 'Phishing SMS' : 'Phishing URL'}
                             </button>
                         </div>
 
                         <textarea
-                            id="email-content"
-                            rows={10}
+                            id="input-content"
+                            rows={inputType === 'url' ? 2 : 10}
                             className="block w-full border-0 bg-transparent p-4 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-0 sm:text-sm font-mono resize-none leading-relaxed"
-                            placeholder="Paste the suspicious email header and body here..."
+                            placeholder={
+                                inputType === 'email'
+                                    ? 'Paste the suspicious email header and body here...'
+                                    : inputType === 'sms'
+                                    ? 'Paste the suspicious SMS message here...'
+                                    : 'Paste or type the suspicious URL here...'
+                            }
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                             required
@@ -96,6 +109,7 @@ function EmailInput({ onAnalyze, loading }) {
 EmailInput.propTypes = {
     onAnalyze: PropTypes.func.isRequired,
     loading: PropTypes.bool.isRequired,
+    inputType: PropTypes.oneOf(['email', 'sms', 'url']).isRequired,
 };
 
 export default EmailInput;
