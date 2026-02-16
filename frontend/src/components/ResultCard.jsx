@@ -10,6 +10,7 @@ function ResultCard({ result }) {
     const textColor = isPhishing ? 'text-red-500' : 'text-emerald-500';
     const borderColor = isPhishing ? 'border-red-500' : 'border-emerald-500';
     const bgColor = isPhishing ? 'bg-red-50 dark:bg-red-900/10' : 'bg-emerald-50 dark:bg-emerald-900/10';
+    const inputTypeLabel = result.input_type ? result.input_type.charAt(0).toUpperCase() + result.input_type.slice(1) : 'Input';
 
     return (
         <motion.div
@@ -36,7 +37,9 @@ function ResultCard({ result }) {
 
                         <div>
                             <h3 className={`text-3xl font-display font-bold ${textColor}`}>
-                                {isPhishing ? 'Phishing Detected' : 'Legitimate Email'}
+                                {isPhishing
+                                    ? `Phishing Detected (${inputTypeLabel})`
+                                    : `Legitimate ${inputTypeLabel}`}
                             </h3>
                             <p className="mt-2 text-slate-500 dark:text-slate-400 flex items-center gap-2">
                                 {isPhishing
