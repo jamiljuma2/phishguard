@@ -20,6 +20,6 @@ services:
     startCommand: "npx serve -s dist"
     envVars:
       - key: VITE_API_URL
-        value: "https://phishguard-backend.onrender.com" # Update after backend deploy
+        value: "https://phishguard-1-e2r2.onrender.com"
     autoDeploy: true
     rootDir: frontend
