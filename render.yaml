@@ -1,0 +1,25 @@
+services:
+
+  - type: web
+    name: phishguard-backend
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PORT
+        value: 10000
+    autoDeploy: true
+    rootDir: backend
+
+  - type: web
+    name: phishguard-frontend
+    runtime: node
+    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npx serve -s dist"
+    envVars:
+      - key: VITE_API_URL
+        value: "https://phishguard-backend.onrender.com" # Update after backend deploy
+    autoDeploy: true
+    rootDir: frontend
