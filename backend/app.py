@@ -8,10 +8,15 @@ import firebase_admin
 from firebase_admin import credentials, db, auth
 from threading import Thread
 
+# Import os for path handling
+import os
+
 # Support both JSON env var (for Render/production) and file path (for local dev)
 
 # Always use serviceAccountKey.json from the backend directory by default
 service_account_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "serviceAccountKey.json")
+print('Service account path:', service_account_path)
+print('File exists:', os.path.exists(service_account_path))
 cred = credentials.Certificate(service_account_path)
 
 firebase_admin.initialize_app(cred, {
