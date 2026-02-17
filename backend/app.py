@@ -1,17 +1,31 @@
-import firebase_admin
-from firebase_admin import credentials
+import os
+import json
+from dotenv import load_dotenv
 
-cred = credentials.Certificate("path/to/your/serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+load_dotenv()
+
+import firebase_admin
+from firebase_admin import credentials, db, auth
+from threading import Thread
+
+# Support both JSON env var (for Render/production) and file path (for local dev)
+firebase_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+if firebase_json:
+    cred = credentials.Certificate(json.loads(firebase_json))
+else:
+    cred = credentials.Certificate(os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json"))
+
+firebase_admin.initialize_app(cred, {
+    'databaseURL': os.environ.get("FIREBASE_DATABASE_URL")
+})
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import os
 import joblib
 from utils import preprocess_text, extract_features
 from history_utils import load_history, add_scan_to_history, get_dashboard_stats
+from email_sending.sender import send_phishing_alert_email
 
-import pathlib
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend', 'dist'))
 app = Flask(__name__, static_folder=FRONTEND_DIST, static_url_path='')
@@ -19,8 +33,6 @@ CORS(app)  # Enable CORS for all routes
 
 
 # Load model (lazy loading or on startup)
-import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, 'phishing_model.pkl')
 model = None
 
@@ -38,6 +50,18 @@ def load_model():
 
 load_model()
 
+def verify_firebase_token():
+    """Verify the Firebase ID token from the Authorization header."""
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return None
+    token = auth_header.split('Bearer ')[1]
+    try:
+        decoded = auth.verify_id_token(token)
+        return decoded.get('uid')
+    except Exception:
+        return None
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "model_loaded": model is not None})
@@ -46,6 +70,9 @@ def health_check():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    uid = verify_firebase_token()
+    if not uid:
+        return jsonify({"error": "Authentication required"}), 401
     data = request.json
     if not data or 'text' not in data or 'type' not in data:
         return jsonify({"error": "Missing required fields: 'text' and 'type'"}), 400
@@ -75,18 +102,24 @@ def predict():
     else:
         return jsonify({"error": "Model not loaded"}), 503
     # Save to history
-    add_scan_to_history(result)
+    add_scan_to_history(result, uid)
     return jsonify(result)
 
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    return jsonify(load_history())
+    uid = verify_firebase_token()
+    if not uid:
+        return jsonify({"error": "Authentication required"}), 401
+    return jsonify(load_history(uid))
 
 
 @app.route('/dashboard_stats', methods=['GET'])
 def dashboard_stats():
-    return jsonify(get_dashboard_stats())
+    uid = verify_firebase_token()
+    if not uid:
+        return jsonify({"error": "Authentication required"}), 401
+    return jsonify(get_dashboard_stats(uid))
 
 
 # Serve React frontend (index.html) for all non-API routes
