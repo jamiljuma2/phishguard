@@ -9,11 +9,10 @@ from firebase_admin import credentials, db, auth
 from threading import Thread
 
 # Support both JSON env var (for Render/production) and file path (for local dev)
-firebase_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
-if firebase_json:
-    cred = credentials.Certificate(json.loads(firebase_json))
-else:
-    cred = credentials.Certificate(os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json"))
+
+# Always use serviceAccountKey.json from the backend directory by default
+service_account_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "serviceAccountKey.json")
+cred = credentials.Certificate(service_account_path)
 
 firebase_admin.initialize_app(cred, {
     'databaseURL': os.environ.get("FIREBASE_DATABASE_URL")
@@ -134,4 +133,5 @@ def serve_frontend(path):
     return send_from_directory(FRONTEND_DIST, 'index.html')
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=5000)

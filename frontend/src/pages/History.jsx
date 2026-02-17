@@ -1,61 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import { Search, Filter, CheckCircle, AlertTriangle } from "lucide-react";
 import api from "../api";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { useQuery } from '@tanstack/react-query';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [historyData, setHistoryData] = useState([]);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchHistory();
-    } else if (!loading) {
-      setHistoryData([]); // Clear history if user logs out
-    }
-  }, [user, loading]);
-
-  const fetchHistory = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get("/history");
-      setHistoryData(res.data);
-    } catch (err) {
-      console.error("Failed to fetch history:", err);
-      setError("Failed to load scan history.");
-      setHistoryData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use react-query for scan history
+  const { data: historyData = [], isLoading: loading, error } = useQuery({
+    queryKey: ['scan_history', user?.uid],
+    queryFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+      const res = await api.get('/history');
+      return res.data;
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60, // 1 minute
+    retry: 1,
+  });
 
   const filteredData = historyData.filter(
     (item) =>
       (item.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.input || "").toLowerCase().includes(searchTerm.toLowerCase()), // Also search in SMS/URL content
+      (item.input || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <p className="text-slate-500 dark:text-slate-400">Loading history...</p>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+              <Skeleton width={180} />
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              <Skeleton width={220} />
+            </p>
+          </div>
+          <div className="flex gap-3 w-full md:w-auto">
+            <div className="relative flex-grow md:flex-grow-0">
+              <Skeleton width={220} height={40} />
+            </div>
+            <Skeleton width={90} height={40} />
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <Skeleton height={300} />
+        </div>
       </div>
     );
   }
