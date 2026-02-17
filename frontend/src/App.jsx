@@ -15,11 +15,12 @@ function App() {
   // Unified navigation: supports both main pages and footer pages
   const [route, setRoute] = useState(window.location.pathname);
   React.useEffect(() => {
-    const onPopState = () => {
+    const onPopState = (e) => {
       const path = window.location.pathname;
       setRoute(path);
-      // Sync navbar state when navigating back to main pages
-      if (path === "/" || path === "") setCurrentPage("home");
+      if (path === "/" || path === "") {
+        setCurrentPage(e.state?.page || "home");
+      }
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -34,7 +35,7 @@ function App() {
   const handleSetCurrentPage = useCallback((page) => {
     setCurrentPage(page);
     setRoute("/");
-    window.history.pushState({}, "", "/");
+    window.history.pushState({ page }, "", "/");
   }, []);
 
   let PageComponent = null;

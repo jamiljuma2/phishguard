@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ReportModal from "../components/ReportModal";
 import {
   AreaChart,
@@ -175,21 +175,18 @@ function Dashboard() {
         <StatsCard
           title="Phishing Emails"
           value={stats.phishing_email}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
         <StatsCard
           title="Phishing SMS"
           value={stats.phishing_sms}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
         <StatsCard
           title="Phishing URLs"
           value={stats.phishing_url}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
@@ -297,7 +294,27 @@ function Dashboard() {
             <button
               className="btn-primary px-6 py-2 text-sm"
               onClick={() => {
-                setSelectedReport({ chart: trendData });
+                setSelectedReport({
+                  result: "Trend Report",
+                  input_type: "summary",
+                  input: `Detection trends over ${trendData.length} periods`,
+                  confidence:
+                    stats.total_scans > 0
+                      ? (stats.phishing_email +
+                          stats.phishing_sms +
+                          stats.phishing_url) /
+                        stats.total_scans
+                      : 0,
+                  total_scans: stats.total_scans,
+                  phishing_total:
+                    stats.phishing_email +
+                    stats.phishing_sms +
+                    stats.phishing_url,
+                  legitimate_total:
+                    stats.legitimate_email +
+                    stats.legitimate_sms +
+                    stats.legitimate_url,
+                });
                 setModalOpen(true);
               }}
             >
@@ -311,7 +328,7 @@ function Dashboard() {
             Recent Alerts
           </h3>
           <div className="space-y-4">
-            {stats.recent.map((scan, i) => (
+            {(stats.recent || []).map((scan, i) => (
               <div
                 key={scan.id || i}
                 className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
@@ -346,11 +363,24 @@ function Dashboard() {
             View All Alerts
           </button>
           {allAlertsOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 relative">
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+              role="dialog"
+              aria-modal="true"
+              aria-label="All Alerts"
+              onClick={() => setAllAlertsOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setAllAlertsOpen(false);
+              }}
+            >
+              <div
+                className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 relative"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
                   className="absolute top-4 right-4 text-slate-400 hover:text-accent text-xl font-bold"
                   onClick={() => setAllAlertsOpen(false)}
+                  aria-label="Close alerts"
                 >
                   &times;
                 </button>
@@ -418,6 +448,13 @@ function Dashboard() {
   );
 }
 
+const colorMap = {
+  blue: "bg-blue-50 dark:bg-blue-900/20",
+  red: "bg-red-50 dark:bg-red-900/20",
+  emerald: "bg-emerald-50 dark:bg-emerald-900/20",
+  indigo: "bg-indigo-50 dark:bg-indigo-900/20",
+};
+
 function StatsCard({ title, value, icon, color, subtext }) {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
@@ -430,9 +467,7 @@ function StatsCard({ title, value, icon, color, subtext }) {
             {value}
           </h3>
         </div>
-        <div
-          className={`p-3 rounded-xl bg-${color}-50 dark:bg-${color}-900/20`}
-        >
+        <div className={`p-3 rounded-xl ${colorMap[color] || colorMap.blue}`}>
           {icon}
         </div>
       </div>

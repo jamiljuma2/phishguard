@@ -2,14 +2,15 @@ import React from "react";
 import ReportModal from "../components/ReportModal";
 import { Database, Cpu, ShieldCheck, Lock, CheckCircle } from "lucide-react";
 
+const sampleReport = {
+  model: "PhishGuard AI v2.0",
+  dataset: "50,000+ emails",
+  algorithms: ["Naive Bayes", "TF-IDF", "Heuristics"],
+  privacy: "GDPR Compliant, Encrypted",
+};
+
 function About() {
   const [modalOpen, setModalOpen] = React.useState(false);
-  const sampleReport = {
-    model: "PhishGuard AI v2.0",
-    dataset: "50,000+ emails",
-    algorithms: ["Naive Bayes", "TF-IDF", "Heuristics"],
-    privacy: "GDPR Compliant, Encrypted",
-  };
   return (
     <div className="max-w-4xl mx-auto space-y-12">
       <div className="text-center space-y-4">

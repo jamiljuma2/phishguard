@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { ShieldAlert, ShieldCheck, AlertTriangle, Eye } from "lucide-react";
 import PropTypes from "prop-types";
@@ -13,7 +12,6 @@ function ResultCard({
 }) {
   const isPhishing = result.result === "Phishing";
   const confidencePercent = (result.confidence * 100).toFixed(1);
-  const color = isPhishing ? "red" : "emerald";
   const textColor = isPhishing ? "text-red-500" : "text-emerald-500";
   const borderColor = isPhishing ? "border-red-500" : "border-emerald-500";
   const bgColor = isPhishing
