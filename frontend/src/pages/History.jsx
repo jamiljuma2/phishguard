@@ -13,12 +13,6 @@ function History() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [user, setUser] = useState(null);
-<<<<<<< HEAD
-=======
-  const [authReady, setAuthReady] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
->>>>>>> dac8611c9be80cb5ea420578fa3022bbfd29dfd5
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

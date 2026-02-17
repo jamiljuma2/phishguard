@@ -45,57 +45,35 @@ function Dashboard() {
   }, isLoading: loading, error } = useQuery({
     queryKey: ['dashboard_stats', user?.uid],
     queryFn: async () => {
-      // Use react-query for dashboard stats
-      const { data: stats = {
-        total_scans: 0,
-        phishing_email: 0,
-        phishing_sms: 0,
-        phishing_url: 0,
-        legitimate_email: 0,
-        legitimate_sms: 0,
-        legitimate_url: 0,
-        recent: [],
-      }, isLoading: loading, error } = useQuery({
-        queryKey: ['dashboard_stats', user?.uid],
-        queryFn: async () => {
-          if (!user) throw new Error('Not authenticated');
-          const res = await api.get('/dashboard_stats');
-          return res.data;
-        },
-        enabled: !!user,
-        staleTime: 1000 * 60, // 1 minute
-        retry: 1,
-      });
+      if (!user) throw new Error('Not authenticated');
+      const res = await api.get('/dashboard_stats');
+      return res.data;
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60, // 1 minute
+    retry: 1,
+  });
 
-      // Generate trend data for chart (last 7 scans by date)
-      const trendData = React.useMemo(() => {
-        if (!stats.recent) return [];
-        return Array(7)
-          .fill(0)
-          .map((_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (6 - i));
-            const day = d.toLocaleString("en-US", { weekday: "short" });
-            const dayScans = stats.recent.filter((scan) => {
-              const scanDate = new Date(scan.timestamp);
-              return scanDate.toDateString() === d.toDateString();
-            });
-            return {
-              name: day,
-              phishing: dayScans.filter((s) => s.result === "Phishing").length,
-              legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
-            };
-          });
-      }, [stats.recent]);
-            </div>
-          ))}
-        </div>
-        <div className="h-64">
-          <Skeleton height={256} />
-        </div>
-      </div>
-    );
-  }
+  // Generate trend data for chart (last 7 scans by date)
+  const trendData = React.useMemo(() => {
+    if (!stats.recent) return [];
+    return Array(7)
+      .fill(0)
+      .map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const day = d.toLocaleString("en-US", { weekday: "short" });
+        const dayScans = stats.recent.filter((scan) => {
+          const scanDate = new Date(scan.timestamp);
+          return scanDate.toDateString() === d.toDateString();
+        });
+        return {
+          name: day,
+          phishing: dayScans.filter((s) => s.result === "Phishing").length,
+          legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
+        };
+      });
+  }, [stats.recent]);
 
   if (!user) {
     return (
@@ -306,47 +284,6 @@ function Dashboard() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
             Recent Alerts
           </h3>
-<<<<<<< HEAD
-          <div className="overflow-y-auto max-h-96 pr-1">
-            <ul className="flex flex-col gap-2 min-w-0">
-              {[...stats.recent].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).map((scan, i) => {
-                const displayText = scan.subject
-                  ? scan.subject
-                  : scan.input
-                  ? scan.input.length > 40
-                    ? scan.input.slice(0, 40) + "..."
-                    : scan.input
-                  : "No Subject";
-                return (
-                  <li
-                    key={scan.id || i}
-                    className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-l-4"
-                    style={{ borderColor: scan.result === "Phishing" ? '#EF4444' : '#10B981' }}
-                  >
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-xs text-slate-400 font-mono mb-0.5">{scan.timestamp ? new Date(scan.timestamp).toLocaleString() : ''}</span>
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate min-w-0" title={scan.subject || scan.input || "No Subject"}>
-                        {displayText}
-                      </span>
-                      <span className="text-xs text-slate-500 truncate">
-                        {scan.email || (scan.input_type === "sms" ? "SMS" : "URL")}
-                      </span>
-                    </div>
-                    <button
-                      className="btn-primary px-2 py-1 text-xs"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setSelectedReport(scan);
-                        setModalOpen(true);
-                      }}
-                    >
-                      View
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-=======
           <div className="space-y-4">
             {(stats.recent || []).map((scan, i) => (
               <div
@@ -375,7 +312,6 @@ function Dashboard() {
                 </button>
               </div>
             ))}
->>>>>>> dac8611c9be80cb5ea420578fa3022bbfd29dfd5
           </div>
           <button
             className="w-full mt-6 py-2 text-sm text-accent hover:text-accent-hover font-medium border border-accent/20 rounded-lg hover:bg-accent/5 transition-colors"
@@ -384,10 +320,6 @@ function Dashboard() {
             View All Alerts
           </button>
           {allAlertsOpen && (
-<<<<<<< HEAD
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-4 sm:p-8 relative">
-=======
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
               role="dialog"
@@ -402,7 +334,6 @@ function Dashboard() {
                 className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 relative"
                 onClick={(e) => e.stopPropagation()}
               >
->>>>>>> dac8611c9be80cb5ea420578fa3022bbfd29dfd5
                 <button
                   className="absolute top-4 right-4 text-slate-400 hover:text-accent text-xl font-bold"
                   onClick={() => setAllAlertsOpen(false)}
