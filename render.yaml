@@ -1,5 +1,4 @@
 services:
-
   - type: web
     name: phishguard-backend
     runtime: python
@@ -9,6 +8,11 @@ services:
     envVars:
       - key: PORT
         value: 10000
+      # Set these in Render Dashboard (not here — they are secrets)
+      # FIREBASE_SERVICE_ACCOUNT_JSON  (paste full JSON content)
+      # FIREBASE_DATABASE_URL
+      # ZEPTOMAIL_API_KEY
+      # ZEPTOMAIL_SENDER_EMAIL
     autoDeploy: true
     rootDir: backend
 
@@ -21,5 +25,19 @@ services:
     envVars:
       - key: VITE_API_URL
         value: "https://phishguard-1-e2r2.onrender.com"
+      - key: VITE_FIREBASE_API_KEY
+        value: "AIzaSyACe3ich3ACB56VeqSsF3B7leixlmhDVxM"
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: "phish-guard-94030.firebaseapp.com"
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: "phish-guard-94030"
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: "phish-guard-94030.firebasestorage.app"
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: "675770018478"
+      - key: VITE_FIREBASE_APP_ID
+        value: "1:675770018478:web:a605e65ad3d0943fdf5b3f"
+      - key: VITE_FIREBASE_MEASUREMENT_ID
+        value: "G-RPGYBQTELG"
     autoDeploy: true
     rootDir: frontend

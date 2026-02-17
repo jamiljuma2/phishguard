@@ -76,10 +76,3 @@ def get_dashboard_stats(user_id):
             elif input_type == 'url':
                 stats['legitimate_url'] += 1
     return stats
-            if input_type == 'email':
-                stats['legitimate_email'] += 1
-            elif input_type == 'sms':
-                stats['legitimate_sms'] += 1
-            elif input_type == 'url':
-                stats['legitimate_url'] += 1
-    return stats
