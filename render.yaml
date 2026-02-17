@@ -1,5 +1,4 @@
 services:
-
   - type: web
     name: phishguard-backend
     runtime: python
