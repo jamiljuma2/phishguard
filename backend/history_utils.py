@@ -39,8 +39,7 @@ def get_dashboard_stats(uid):
         'legitimate_email': 0,
         'legitimate_sms': 0,
         'legitimate_url': 0,
-        # Only send the most recent 5 for faster frontend load
-        'recent': history[:5],
+        'recent': history[:10],
     }
     for s in history:
         input_type = s.get('input_type', 'email')
