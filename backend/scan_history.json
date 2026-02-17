@@ -1,6 +1,71 @@
 [
   {
     "result": "Legitimate",
+    "confidence": 1.0,
+    "heuristics": {
+      "url_count": 1,
+      "url_risk_score": 0,
+      "suspicious_patterns": [],
+      "suspicious_keyword_count": 0
+    },
+    "input": "https://www.google.com/search",
+    "input_type": "url",
+    "email": "",
+    "subject": "",
+    "suspicious_words": [],
+    "url_features": {
+      "url_length": 29,
+      "domain_length": 14,
+      "num_dots": 2,
+      "num_hyphens": 0,
+      "num_subdomains": 2,
+      "num_queries": 0,
+      "is_https": 1,
+      "has_ip": 0,
+      "num_digits": 0,
+      "special_chars_count": 0,
+      "num_params": 0,
+      "path_depth": 1
+    },
+    "id": 7,
+    "timestamp": "2026-02-17T06:07:02.205466"
+  },
+  {
+    "result": "Phishing",
+    "confidence": 0.99,
+    "heuristics": {
+      "url_count": 1,
+      "url_risk_score": 13,
+      "suspicious_patterns": [
+        "Suspicious domain: paypa1-login.xyz",
+        "Fake domain detected: paypa1-login.xyz"
+      ],
+      "suspicious_keyword_count": 2
+    },
+    "input": "http://paypa1-login.xyz/verify",
+    "input_type": "url",
+    "email": "",
+    "subject": "",
+    "suspicious_words": [],
+    "url_features": {
+      "url_length": 30,
+      "domain_length": 16,
+      "num_dots": 1,
+      "num_hyphens": 1,
+      "num_subdomains": 1,
+      "num_queries": 0,
+      "is_https": 0,
+      "has_ip": 0,
+      "num_digits": 1,
+      "special_chars_count": 0,
+      "num_params": 0,
+      "path_depth": 1
+    },
+    "id": 6,
+    "timestamp": "2026-02-17T06:06:54.335434"
+  },
+  {
+    "result": "Legitimate",
     "confidence": 0.5714285714285714,
     "heuristics": {
       "url_count": 1,
