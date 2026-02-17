@@ -18,7 +18,6 @@ else:
 firebase_admin.initialize_app(cred, {
     'databaseURL': os.environ.get("FIREBASE_DATABASE_URL")
 })
-
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import joblib
