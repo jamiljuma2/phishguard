@@ -5,41 +5,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import firebase_admin
-from firebase_admin import credentials, db, auth
-from threading import Thread
-
-# Support both JSON env var (for Render/production) and file path (for local dev)
-firebase_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON") or os.environ.get("GOOGLE_CREDENTIALS_JSON")
-if firebase_json:
-    cred = credentials.Certificate(json.loads(firebase_json))
-else:
-    cred = credentials.Certificate(os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json"))
-
-firebase_admin.initialize_app(cred, {
-    'databaseURL': os.environ.get("FIREBASE_DATABASE_URL")
-})
-
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-import joblib
-from utils import preprocess_text, extract_features
-from history_utils import load_history, add_scan_to_history, get_dashboard_stats
+<<<<<<< HEAD
 from email_sending.sender import send_phishing_alert_email
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend', 'dist'))
-app = Flask(__name__, static_folder=FRONTEND_DIST, static_url_path='')
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True,
-     allow_headers=["Content-Type", "Authorization"],
-     methods=["GET", "POST", "OPTIONS"])
-
-
-# Load model (lazy loading or on startup)
-MODEL_PATH = os.path.join(BASE_DIR, 'phishing_model.pkl')
-model = None
-
-def load_model():
-    global model
+import os
+import json
+from dotenv import load_dotenv
+load_dotenv()
+from threading import Thread
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from utils import preprocess_text
+import fast_url_detector
+import fast_email_detector
+import history_utils
     if os.path.exists(MODEL_PATH):
         try:
             model = joblib.load(MODEL_PATH)
@@ -136,3 +114,126 @@ def serve_frontend(path):
 
 if __name__ == '__main__':
     app.run(port=5000)
+=======
+from firebase_admin import credentials
+from flask import Flask, request, jsonify
+from firebase_admin import auth as firebase_auth
+import history_utils
+from flask_cors import CORS
+from utils import preprocess_text
+
+import fast_url_detector
+import fast_email_detector
+
+# Use GOOGLE_CREDENTIALS_JSON environment variable for credentials (Render best practice)
+creds_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+if not creds_json:
+    raise RuntimeError("GOOGLE_CREDENTIALS_JSON environment variable is not set. Please add your serviceAccountKey.json contents as an environment variable in Render.")
+cred = credentials.Certificate(json.loads(creds_json))
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://phish-guard-94030-default-rtdb.europe-west1.firebasedatabase.app'
+})
+
+app = Flask(__name__)
+CORS(app)
+
+
+# Use fast logistic regression for email/SMS
+email_model_instance = fast_email_detector.FastEmailPhishingDetector()
+
+url_model_instance = fast_url_detector.FastURLPhishingDetector()
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
+    text = data.get('text')
+    input_type = data.get('type')
+    uid = get_uid_from_request()
+    if not text or not input_type:
+        return jsonify({'error': 'Missing text or type'}), 400
+
+
+    import traceback
+    # Email prediction
+    if input_type == 'email':
+        try:
+            result, confidence = email_model_instance.predict(text)
+        except Exception as e:
+            print('EMAIL MODEL ERROR:', str(e))
+            traceback.print_exc()
+            return jsonify({'error': f'Email model not loaded: {str(e)}'}), 500
+        scan = {
+            'input_type': 'email',
+            'subject': text[:50],
+            'email': '',
+            'result': result,
+            'confidence': float(confidence),
+        }
+    # SMS prediction (use fast email model)
+    elif input_type == 'sms':
+        try:
+            result, confidence = email_model_instance.predict(text)
+        except Exception as e:
+            print('SMS MODEL ERROR:', str(e))
+            traceback.print_exc()
+            return jsonify({'error': f'SMS model not loaded: {str(e)}'}), 500
+        scan = {
+            'input_type': 'sms',
+            'input': text[:50],
+            'result': result,
+            'confidence': float(confidence),
+        }
+    # URL prediction
+    elif input_type == 'url':
+        try:
+            result, confidence = url_model_instance.predict(text)
+        except Exception as e:
+            print('URL MODEL ERROR:', str(e))
+            traceback.print_exc()
+            return jsonify({'error': f'URL model not loaded: {str(e)}'}), 500
+        scan = {
+            'input_type': 'url',
+            'input': text,
+            'result': result,
+            'confidence': float(confidence),
+        }
+    else:
+        print('INVALID TYPE:', input_type)
+        return jsonify({'error': 'Invalid type'}), 400
+
+    # Save scan to history if user is authenticated
+    if uid:
+        history_utils.add_scan_to_history(scan, uid)
+
+    return jsonify(scan)
+
+@app.route("/")
+def index():
+    return "PhishGuard backend is running!"
+
+def get_uid_from_request():
+    auth_header = request.headers.get('Authorization', None)
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    id_token = auth_header.split('Bearer ')[1]
+    try:
+        decoded_token = firebase_auth.verify_id_token(id_token)
+        return decoded_token['uid']
+    except Exception:
+        return None
+
+@app.route('/dashboard_stats', methods=['GET'])
+def dashboard_stats():
+    uid = get_uid_from_request()
+    if not uid:
+        return jsonify({'error': 'Unauthorized'}), 401
+    stats = history_utils.get_dashboard_stats(uid)
+    return jsonify(stats)
+
+@app.route('/history', methods=['GET'])
+def history():
+    uid = get_uid_from_request()
+    if not uid:
+        return jsonify({'error': 'Unauthorized'}), 401
+    history = history_utils.load_history(uid)
+    return jsonify(history)
+>>>>>>> cbbd4905 (Fix: ensure os import at top of app.py, backend/frontend run scripts)

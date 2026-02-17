@@ -39,7 +39,8 @@ def get_dashboard_stats(uid):
         'legitimate_email': 0,
         'legitimate_sms': 0,
         'legitimate_url': 0,
-        'recent': history[:10],
+        # Send the most recent 20 for dashboard chart, but full history for scan history tab
+        'recent': history[:20],
     }
     for s in history:
         input_type = s.get('input_type', 'email')
