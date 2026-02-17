@@ -2,21 +2,40 @@ import React from "react";
 import Auth from "./Auth";
 
 const LoginModal = ({ isOpen, onClose }) => {
-  if (!isOpen) {
-    return null;
-  }
+    if (!isOpen) {
+        return null;
+    }
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg">
-        <h2 className="text-2xl font-bold mb-4">Sign In</h2>
-        <Auth />
-        <button onClick={onClose} className="mt-4">
-          Close
-        </button>
-      </div>
-    </div>
-  );
+    return (
+        <div
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-sm text-center transform transition-all"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    Welcome to PhishGuard
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                    Sign in to save and view your scan history.
+                </p>
+                <div className="space-y-4">
+                    <Auth />
+                    <p className="text-xs text-slate-500">
+                        By continuing, you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                </div>
+                <button
+                    onClick={onClose}
+                    className="mt-6 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                >
+                    Maybe later
+                </button>
+            </div>
+        </div>
+    );
 };
 
 export default LoginModal;

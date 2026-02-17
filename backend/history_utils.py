@@ -1,32 +1,53 @@
-import json
-import os
 from datetime import datetime
+from firebase_admin import db
 
-HISTORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scan_history.json')
+def get_history_ref(user_id):
+    return db.reference(f'user_scans/{user_id}')
 
-def load_history():
-    if os.path.exists(HISTORY_PATH):
-        with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
-            try:
-                return json.load(f)
-            except Exception:
-                return []
-    return []
-
-def save_history(history):
-    with open(HISTORY_PATH, 'w', encoding='utf-8') as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-
-def add_scan_to_history(scan):
-    history = load_history()
-    scan['id'] = len(history) + 1
+def add_scan_to_history(user_id, scan):
+    if not user_id:
+        print("Cannot add scan to history: user_id is missing.")
+        return
+    
+    # Generate a unique key for the new scan entry
+    new_scan_ref = get_history_ref(user_id).push()
+    scan['id'] = new_scan_ref.key  # Store the Firebase generated key as 'id'
     scan['timestamp'] = datetime.now().isoformat()
-    history.insert(0, scan)
-    save_history(history)
+    
+    new_scan_ref.set(scan)
+    print(f"Scan added to Firebase for user {user_id} with ID {scan['id']}")
 
-def get_dashboard_stats():
-    history = load_history()
-    # Separate counts for each input type and result
+def load_history(user_id):
+    if not user_id:
+        return []
+    
+    try:
+        history_data = get_history_ref(user_id).order_by_child('timestamp').limit_to_last(100).get() # Fetch last 100 scans
+        if not history_data:
+            return []
+        
+        # Convert dictionary of scans to a list, and sort by timestamp in descending order
+        history_list = list(history_data.values())
+        history_list.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        return history_list
+    except Exception as e:
+        print(f"Error loading history from Firebase for user {user_id}: {e}")
+        return []
+
+def get_dashboard_stats(user_id):
+    if not user_id:
+        return {
+            'total_scans': 0,
+            'phishing_email': 0,
+            'phishing_sms': 0,
+            'phishing_url': 0,
+            'legitimate_email': 0,
+            'legitimate_sms': 0,
+            'legitimate_url': 0,
+            'recent': [],
+        }
+    
+    history = load_history(user_id)
     stats = {
         'total_scans': len(history),
         'phishing_email': 0,
@@ -48,6 +69,13 @@ def get_dashboard_stats():
             elif input_type == 'url':
                 stats['phishing_url'] += 1
         elif result == 'Legitimate':
+            if input_type == 'email':
+                stats['legitimate_email'] += 1
+            elif input_type == 'sms':
+                stats['legitimate_sms'] += 1
+            elif input_type == 'url':
+                stats['legitimate_url'] += 1
+    return stats
             if input_type == 'email':
                 stats['legitimate_email'] += 1
             elif input_type == 'sms':
