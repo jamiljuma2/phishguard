@@ -4,6 +4,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { AlertTriangle, CheckCircle, Globe, Mail } from 'lucide-react';
 import PropTypes from 'prop-types';
 import api from '../api';
+import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function Dashboard() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -20,9 +22,45 @@ function Dashboard() {
     });
     const [trendData, setTrendData] = useState([]);
     const [allAlertsOpen, setAllAlertsOpen] = useState(false);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
-        api.get('/dashboard_stats').then(res => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (user) {
+            fetchDashboardStats();
+        } else if (!loading) {
+            setStats({
+                total_scans: 0,
+                phishing_email: 0,
+                phishing_sms: 0,
+                phishing_url: 0,
+                legitimate_email: 0,
+                legitimate_sms: 0,
+                legitimate_url: 0,
+                recent: []
+            });
+            setTrendData([]);
+        }
+    }, [user, loading]);
+
+    const fetchDashboardStats = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await api.get('/dashboard_stats', {
+                headers: { 'X-User-ID': user.uid }
+            });
             setStats(res.data);
+
             // Generate trend data for chart (last 7 scans by date)
             const trend = Array(7).fill(0).map((_, i) => {
                 const d = new Date();
@@ -39,8 +77,54 @@ function Dashboard() {
                 };
             });
             setTrendData(trend);
-        });
-    }, []);
+        } catch (err) {
+            console.error("Failed to fetch dashboard stats:", err);
+            setError("Failed to load dashboard statistics.");
+            setStats({
+                total_scans: 0,
+                phishing_email: 0,
+                phishing_sms: 0,
+                phishing_url: 0,
+                legitimate_email: 0,
+                legitimate_sms: 0,
+                legitimate_url: 0,
+                recent: []
+            });
+            setTrendData([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-full">
+                <p className="text-slate-500 dark:text-slate-400">Loading dashboard...</p>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="flex flex-col justify-center items-center h-full text-center">
+                <p className="text-xl font-medium text-slate-700 dark:text-white mb-4">Please sign in to view your dashboard.</p>
+                <button 
+                    onClick={() => { /* Trigger login modal here if desired */ alert("Sign in functionality is available via the navigation bar.") }}
+                    className="btn-primary px-6 py-3"
+                >
+                    Sign In / Sign Up
+                </button>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-full">
+                <p className="text-red-500 dark:text-red-400">Error: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -155,8 +239,8 @@ function Dashboard() {
                             <div key={scan.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
                                 <div className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
                                 <div>
-                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || 'No Subject'}</p>
-                                    <p className="text-xs text-slate-500">{scan.email || 'Unknown sender'}</p>
+                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || scan.input || 'No Subject'}</p>
+                                    <p className="text-xs text-slate-500">{scan.email || (scan.input_type === 'sms' ? 'SMS' : 'URL')}</p>
                                 </div>
                                 <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
                                   setSelectedReport(scan);
@@ -185,23 +269,23 @@ function Dashboard() {
                                 <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">All Alerts</h3>
                                 <div className="space-y-3">
                                     {stats.recent.length === 0 && <div className="text-slate-500">No alerts found.</div>}
-                                                                        {stats.recent.map((scan, i) => (
-                                                                                <div key={scan.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
-                                                                                        <div className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                                                                                        <div>
-                                                                                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || 'No Subject'}</p>
-                                                                                                <p className="text-xs text-slate-500">{scan.email || 'Unknown sender'}</p>
-                                                                                                <p className="text-xs text-slate-400 mt-1">Type: {scan.input_type ? scan.input_type.charAt(0).toUpperCase() + scan.input_type.slice(1) : 'Unknown'}</p>
-                                                                                                <p className="text-xs text-slate-400 mt-1">Confidence: {typeof scan.confidence === 'number' ? (scan.confidence * 100).toFixed(2) + '%' : 'N/A'}</p>
-                                                                                        </div>
-                                                                                        <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
-                                                                                            setSelectedReport(scan);
-                                                                                            setModalOpen(true);
-                                                                                        }}>
-                                                                                            View Report
-                                                                                        </button>
-                                                                                </div>
-                                                                        ))}
+                                    {stats.recent.map((scan, i) => (
+                                        <div key={scan.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
+                                            <div className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === 'Phishing' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+                                            <div>
+                                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{scan.subject || scan.input || 'No Subject'}</p>
+                                                <p className="text-xs text-slate-500">{scan.email || (scan.input_type === 'sms' ? 'SMS' : 'URL')}</p>
+                                                <p className="text-xs text-slate-400 mt-1">Type: {scan.input_type ? scan.input_type.charAt(0).toUpperCase() + scan.input_type.slice(1) : 'Unknown'}</p>
+                                                <p className="text-xs text-slate-400 mt-1">Confidence: {typeof scan.confidence === 'number' ? (scan.confidence * 100).toFixed(2) + '%' : 'N/A'}</p>
+                                            </div>
+                                            <button className="btn-primary px-3 py-1 text-xs ml-4" onClick={() => {
+                                                setSelectedReport(scan);
+                                                setModalOpen(true);
+                                            }}>
+                                                View Report
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>

@@ -1,0 +1,16 @@
+# Backend
+backend/__pycache__/
+backend/phishing_model.pkl
+backend/scan_history.json
+backend/serviceAccountKey.json
+
+# Frontend
+frontend/dist/
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+
+# General
+.vscode/
+.DS_Store
+*.log

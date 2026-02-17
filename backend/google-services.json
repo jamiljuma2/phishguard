@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "675770018478",
+    "firebase_url": "https://phish-guard-94030-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "phish-guard-94030",
+    "storage_bucket": "phish-guard-94030.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675770018478:android:1217af7287afad65df5b3f",
+        "android_client_info": {
+          "package_name": "com.kelvin.smsbroadcaster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675770018478-0j8sn1ptceu2o39is71e5rbt0gmvv4fo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kelvin.smsbroadcaster",
+            "certificate_hash": "dab0d5fc9fb50a9deb9c2ca55160cb5253d11b48"
+          }
+        },
+        {
+          "client_id": "675770018478-3tr8100rlq54hu8qgaocki71ti2mjdd6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyqsV2fSomOkLxnaJiR2hFhrMg5gEdwRA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "675770018478-3tr8100rlq54hu8qgaocki71ti2mjdd6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

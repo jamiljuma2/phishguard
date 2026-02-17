@@ -3,3 +3,5 @@ flask-cors
 joblib
 scikit-learn
 gunicorn
+firebase-admin
+requests
