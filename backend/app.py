@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, db, auth # Import auth
 from threading import Thread
 
-cred = credentials.Certificate("path/to/your/serviceAccountKey.json")
+cred = credentials.Certificate(os.path.join(BASE_DIR, "serviceAccountKey.json"))
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://phish-guard-94030-default-rtdb.europe-west1.firebasedatabase.app/'
 })
