@@ -1,12 +1,22 @@
 import os
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import firebase_admin
 from firebase_admin import credentials, db, auth # Import auth
 from threading import Thread
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cred = credentials.Certificate(os.path.join(BASE_DIR, "serviceAccountKey.json"))
+# Support both JSON env var (for Render/production) and file path (for local dev)
+firebase_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+if firebase_json:
+    cred = credentials.Certificate(json.loads(firebase_json))
+else:
+    cred = credentials.Certificate(os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json"))
+
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://phish-guard-94030-default-rtdb.europe-west1.firebasedatabase.app/'
+    'databaseURL': os.environ.get("FIREBASE_DATABASE_URL")
 })
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -15,7 +25,6 @@ from utils import preprocess_text, extract_features
 from history_utils import load_history, add_scan_to_history, get_dashboard_stats
 from email_sending.sender import send_phishing_alert_email # Import the email sending function
 
-import pathlib
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend', 'dist'))
 app = Flask(__name__, static_folder=FRONTEND_DIST, static_url_path='')
@@ -23,8 +32,6 @@ CORS(app)  # Enable CORS for all routes
 
 
 # Load model (lazy loading or on startup)
-import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, 'phishing_model.pkl')
 model = None
 
@@ -48,11 +55,25 @@ def health_check():
 
 
 
+def verify_firebase_token():
+    """Verify the Firebase ID token from the Authorization header."""
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return None
+    token = auth_header.split('Bearer ')[1]
+    try:
+        decoded = auth.verify_id_token(token)
+        return decoded['uid']
+    except Exception as e:
+        print(f"Token verification failed: {e}")
+        return None
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    user_id = request.headers.get('X-User-ID') # Get user ID from header
+    user_id = verify_firebase_token()
     if not user_id:
-        return jsonify({"error": "Unauthorized: Missing X-User-ID header"}), 401
+        return jsonify({"error": "Unauthorized: Invalid or missing authentication token"}), 401
 
     data = request.json
     if not data or 'text' not in data or 'type' not in data:
@@ -90,17 +111,17 @@ def predict():
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    user_id = request.headers.get('X-User-ID') # Get user ID from header
+    user_id = verify_firebase_token()
     if not user_id:
-        return jsonify({"error": "Unauthorized: Missing X-User-ID header"}), 401
+        return jsonify({"error": "Unauthorized: Invalid or missing authentication token"}), 401
     return jsonify(load_history(user_id))
 
 
 @app.route('/dashboard_stats', methods=['GET'])
 def dashboard_stats():
-    user_id = request.headers.get('X-User-ID') # Get user ID from header
+    user_id = verify_firebase_token()
     if not user_id:
-        return jsonify({"error": "Unauthorized: Missing X-User-ID header"}), 401
+        return jsonify({"error": "Unauthorized: Invalid or missing authentication token"}), 401
     return jsonify(get_dashboard_stats(user_id))
 
 
@@ -220,4 +241,4 @@ def before_request():
         app._db_listener_started = True
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=int(os.environ.get('FLASK_PORT', 5000)))

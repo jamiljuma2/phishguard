@@ -2,8 +2,7 @@ import requests
 import os
 
 ZEPTOMAIL_API_KEY = os.environ.get("ZEPTOMAIL_API_KEY")
-ZEPTOMAIL_USERNAME = os.environ.get("ZEPTOMAIL_USERNAME", "emailapikey")
-ZEPTOMAIL_SENDER_EMAIL = "PhishGuard@coursehubkenya.com"
+ZEPTOMAIL_SENDER_EMAIL = os.environ.get("ZEPTOMAIL_SENDER_EMAIL", "PhishGuard@coursehubkenya.com")
 
 def send_phishing_alert_email(recipient_email, sms_content, scan_result, suspicious_words):
     if not ZEPTOMAIL_API_KEY:
