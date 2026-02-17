@@ -11,6 +11,55 @@
     "email": "",
     "subject": "",
     "suspicious_words": [],
+    "id": 8,
+    "timestamp": "2026-02-16T13:40:30.483768"
+  },
+  {
+    "result": "Phishing",
+    "confidence": 0.5216032916416086,
+    "heuristics": {
+      "url_count": 1,
+      "suspicious_keyword_count": 2
+    },
+    "input": "URGENT: Your bank account is locked. Visit http://phish.com",
+    "input_type": "sms",
+    "email": "",
+    "subject": "",
+    "suspicious_words": [
+      "urgent"
+    ],
+    "id": 7,
+    "timestamp": "2026-02-16T13:40:30.453767"
+  },
+  {
+    "result": "Phishing",
+    "confidence": 0.5212165028233471,
+    "heuristics": {
+      "url_count": 0,
+      "suspicious_keyword_count": 3
+    },
+    "input": "This is a test email about your account. Click here to login.",
+    "input_type": "email",
+    "email": "",
+    "subject": "",
+    "suspicious_words": [
+      "login"
+    ],
+    "id": 6,
+    "timestamp": "2026-02-16T13:40:30.414136"
+  },
+  {
+    "result": "Legitimate",
+    "confidence": 0.5714285714285714,
+    "heuristics": {
+      "url_count": 1,
+      "suspicious_keyword_count": 1
+    },
+    "input": "http://malicious-url.com/reset-password",
+    "input_type": "url",
+    "email": "",
+    "subject": "",
+    "suspicious_words": [],
     "id": 5,
     "timestamp": "2026-02-16T12:26:33.691258"
   },
