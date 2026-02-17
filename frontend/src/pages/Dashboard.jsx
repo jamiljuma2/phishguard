@@ -31,21 +31,24 @@ function Dashboard() {
   const [trendData, setTrendData] = useState([]);
   const [allAlertsOpen, setAllAlertsOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      setAuthReady(true);
+      if (!currentUser) setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
+    if (!authReady) return;
     if (user) {
       fetchDashboardStats();
-    } else if (!loading) {
+    } else {
       setStats({
         total_scans: 0,
         phishing_email: 0,
@@ -58,7 +61,7 @@ function Dashboard() {
       });
       setTrendData([]);
     }
-  }, [user, loading]);
+  }, [user, authReady]);
 
   const fetchDashboardStats = async () => {
     setLoading(true);

@@ -11,24 +11,27 @@ function History() {
   const [selectedReport, setSelectedReport] = useState(null);
   const [historyData, setHistoryData] = useState([]);
   const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      setAuthReady(true);
+      if (!currentUser) setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
+    if (!authReady) return;
     if (user) {
       fetchHistory();
-    } else if (!loading) {
-      setHistoryData([]); // Clear history if user logs out
+    } else {
+      setHistoryData([]);
     }
-  }, [user, loading]);
+  }, [user, authReady]);
 
   const fetchHistory = async () => {
     setLoading(true);
