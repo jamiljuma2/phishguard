@@ -25,6 +25,7 @@ services:
     envVars:
       - key: VITE_API_URL
         value: "https://phishguard-1-e2r2.onrender.com"
+      # Set these in Render Dashboard (not here — they are secrets)
       # VITE_FIREBASE_API_KEY
       # VITE_FIREBASE_AUTH_DOMAIN
       # VITE_FIREBASE_PROJECT_ID
