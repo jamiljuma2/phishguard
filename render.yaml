@@ -20,5 +20,7 @@ services:
     envVars:
       - key: VITE_API_URL
         value: "https://phishguard-1-e2r2.onrender.com"
+      - key: NODE_VERSION
+        value: "20.18.0"
     autoDeploy: true
     rootDir: frontend
