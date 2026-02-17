@@ -1,7 +1,17 @@
-import React from "react";
+import { useEffect } from "react";
 import Auth from "./Auth";
+import PropTypes from "prop-types";
 
 const LoginModal = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
@@ -10,6 +20,9 @@ const LoginModal = ({ isOpen, onClose }) => {
     <div
       className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Sign in to PhishGuard"
     >
       <div
         className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-sm text-center transform transition-all"
@@ -36,6 +49,11 @@ const LoginModal = ({ isOpen, onClose }) => {
       </div>
     </div>
   );
+};
+
+LoginModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default LoginModal;

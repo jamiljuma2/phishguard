@@ -45,60 +45,48 @@ function Dashboard() {
   }, isLoading: loading, error } = useQuery({
     queryKey: ['dashboard_stats', user?.uid],
     queryFn: async () => {
-      if (!user) throw new Error('Not authenticated');
-      const res = await api.get('/dashboard_stats');
-      return res.data;
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60, // 1 minute
-    retry: 1,
-  });
-
-  // Generate trend data for chart (last 7 scans by date)
-  const trendData = React.useMemo(() => {
-    if (!stats.recent) return [];
-    return Array(7)
-      .fill(0)
-      .map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        const day = d.toLocaleString("en-US", { weekday: "short" });
-        const dayScans = stats.recent.filter((scan) => {
-          const scanDate = new Date(scan.timestamp);
-          return scanDate.toDateString() === d.toDateString();
-        });
-        return {
-          name: day,
-          phishing: dayScans.filter((s) => s.result === "Phishing").length,
-          legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
-        };
+      // Use react-query for dashboard stats
+      const { data: stats = {
+        total_scans: 0,
+        phishing_email: 0,
+        phishing_sms: 0,
+        phishing_url: 0,
+        legitimate_email: 0,
+        legitimate_sms: 0,
+        legitimate_url: 0,
+        recent: [],
+      }, isLoading: loading, error } = useQuery({
+        queryKey: ['dashboard_stats', user?.uid],
+        queryFn: async () => {
+          if (!user) throw new Error('Not authenticated');
+          const res = await api.get('/dashboard_stats');
+          return res.data;
+        },
+        enabled: !!user,
+        staleTime: 1000 * 60, // 1 minute
+        retry: 1,
       });
-  }, [stats.recent]);
 
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-end">
-          <div>
-            <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
-              <Skeleton width={220} />
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
-              <Skeleton width={300} />
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-sm font-medium text-slate-500">
-              <Skeleton width={80} />
-            </span>
-          </div>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {Array(4).fill(0).map((_, i) => (
-            <div key={i} className="rounded-2xl shadow-xl bg-white dark:bg-slate-800 p-8">
-              <Skeleton height={40} width={40} circle={true} />
-              <Skeleton height={30} width={120} style={{ marginTop: 10 }} />
-              <Skeleton height={20} width={60} style={{ marginTop: 10 }} />
+      // Generate trend data for chart (last 7 scans by date)
+      const trendData = React.useMemo(() => {
+        if (!stats.recent) return [];
+        return Array(7)
+          .fill(0)
+          .map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            const day = d.toLocaleString("en-US", { weekday: "short" });
+            const dayScans = stats.recent.filter((scan) => {
+              const scanDate = new Date(scan.timestamp);
+              return scanDate.toDateString() === d.toDateString();
+            });
+            return {
+              name: day,
+              phishing: dayScans.filter((s) => s.result === "Phishing").length,
+              legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
+            };
+          });
+      }, [stats.recent]);
             </div>
           ))}
         </div>
@@ -166,21 +154,18 @@ function Dashboard() {
         <StatsCard
           title="Phishing Emails"
           value={stats.phishing_email}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
         <StatsCard
           title="Phishing SMS"
           value={stats.phishing_sms}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
         <StatsCard
           title="Phishing URLs"
           value={stats.phishing_url}
-          isBad={true}
           icon={<AlertTriangle className="text-red-500" />}
           color="red"
         />
@@ -288,7 +273,27 @@ function Dashboard() {
             <button
               className="btn-primary px-6 py-2 text-sm"
               onClick={() => {
-                setSelectedReport({ chart: trendData });
+                setSelectedReport({
+                  result: "Trend Report",
+                  input_type: "summary",
+                  input: `Detection trends over ${trendData.length} periods`,
+                  confidence:
+                    stats.total_scans > 0
+                      ? (stats.phishing_email +
+                          stats.phishing_sms +
+                          stats.phishing_url) /
+                        stats.total_scans
+                      : 0,
+                  total_scans: stats.total_scans,
+                  phishing_total:
+                    stats.phishing_email +
+                    stats.phishing_sms +
+                    stats.phishing_url,
+                  legitimate_total:
+                    stats.legitimate_email +
+                    stats.legitimate_sms +
+                    stats.legitimate_url,
+                });
                 setModalOpen(true);
               }}
             >
@@ -301,6 +306,7 @@ function Dashboard() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
             Recent Alerts
           </h3>
+<<<<<<< HEAD
           <div className="overflow-y-auto max-h-96 pr-1">
             <ul className="flex flex-col gap-2 min-w-0">
               {[...stats.recent].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).map((scan, i) => {
@@ -340,6 +346,36 @@ function Dashboard() {
                 );
               })}
             </ul>
+=======
+          <div className="space-y-4">
+            {(stats.recent || []).map((scan, i) => (
+              <div
+                key={scan.id || i}
+                className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+              >
+                <div
+                  className={`mt-1 min-w-[8px] h-2 w-2 rounded-full ${scan.result === "Phishing" ? "bg-red-500" : "bg-emerald-500"}`}
+                ></div>
+                <div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {scan.subject || scan.input || "No Subject"}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {scan.email || (scan.input_type === "sms" ? "SMS" : "URL")}
+                  </p>
+                </div>
+                <button
+                  className="btn-primary px-3 py-1 text-xs ml-4"
+                  onClick={() => {
+                    setSelectedReport(scan);
+                    setModalOpen(true);
+                  }}
+                >
+                  View Report
+                </button>
+              </div>
+            ))}
+>>>>>>> dac8611c9be80cb5ea420578fa3022bbfd29dfd5
           </div>
           <button
             className="w-full mt-6 py-2 text-sm text-accent hover:text-accent-hover font-medium border border-accent/20 rounded-lg hover:bg-accent/5 transition-colors"
@@ -348,11 +384,29 @@ function Dashboard() {
             View All Alerts
           </button>
           {allAlertsOpen && (
+<<<<<<< HEAD
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-4 sm:p-8 relative">
+=======
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+              role="dialog"
+              aria-modal="true"
+              aria-label="All Alerts"
+              onClick={() => setAllAlertsOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setAllAlertsOpen(false);
+              }}
+            >
+              <div
+                className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+>>>>>>> dac8611c9be80cb5ea420578fa3022bbfd29dfd5
                 <button
                   className="absolute top-4 right-4 text-slate-400 hover:text-accent text-xl font-bold"
                   onClick={() => setAllAlertsOpen(false)}
+                  aria-label="Close alerts"
                 >
                   &times;
                 </button>
@@ -420,6 +474,13 @@ function Dashboard() {
   );
 }
 
+const colorMap = {
+  blue: "bg-blue-50 dark:bg-blue-900/20",
+  red: "bg-red-50 dark:bg-red-900/20",
+  emerald: "bg-emerald-50 dark:bg-emerald-900/20",
+  indigo: "bg-indigo-50 dark:bg-indigo-900/20",
+};
+
 function StatsCard({ title, value, icon, color, subtext }) {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
@@ -432,9 +493,7 @@ function StatsCard({ title, value, icon, color, subtext }) {
             {value}
           </h3>
         </div>
-        <div
-          className={`p-3 rounded-xl bg-${color}-50 dark:bg-${color}-900/20`}
-        >
+        <div className={`p-3 rounded-xl ${colorMap[color] || colorMap.blue}`}>
           {icon}
         </div>
       </div>

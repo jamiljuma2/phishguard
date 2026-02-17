@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import EmailInput from "../components/EmailInput";
 import ResultCard from "../components/ResultCard";
@@ -74,21 +74,33 @@ function Home() {
         <div className="flex justify-center gap-4 mb-2">
           <button
             className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === "email" ? "bg-accent text-white" : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent"}`}
-            onClick={() => setInputType("email")}
+            onClick={() => {
+              setInputType("email");
+              setResult(null);
+              setError(null);
+            }}
             type="button"
           >
             Email
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === "sms" ? "bg-accent text-white" : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent"}`}
-            onClick={() => setInputType("sms")}
+            onClick={() => {
+              setInputType("sms");
+              setResult(null);
+              setError(null);
+            }}
             type="button"
           >
             SMS
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium border transition-colors ${inputType === "url" ? "bg-accent text-white" : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-accent"}`}
-            onClick={() => setInputType("url")}
+            onClick={() => {
+              setInputType("url");
+              setResult(null);
+              setError(null);
+            }}
             type="button"
           >
             URL

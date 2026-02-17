@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Shield, Menu, X, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
@@ -58,6 +58,15 @@ function Navbar({ currentPage, setCurrentPage }) {
           <div
             className="flex-shrink-0 flex items-center gap-3 cursor-pointer"
             onClick={() => setCurrentPage("home")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setCurrentPage("home");
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="PhishGuard home"
           >
             <div className="bg-gradient-to-br from-highlight to-accent p-2 rounded-lg shadow-lg">
               <Shield className="h-6 w-6 text-white" />
@@ -86,6 +95,9 @@ function Navbar({ currentPage, setCurrentPage }) {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
+              aria-label={
+                isDark ? "Switch to light mode" : "Switch to dark mode"
+              }
               className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent-light transition-colors"
             >
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -128,12 +140,16 @@ function Navbar({ currentPage, setCurrentPage }) {
           <div className="md:hidden flex items-center gap-4">
             <button
               onClick={toggleTheme}
+              aria-label={
+                isDark ? "Switch to light mode" : "Switch to dark mode"
+              }
               className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
             >
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
               className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
             >
               {isOpen ? <X size={28} /> : <Menu size={28} />}
