@@ -4,7 +4,9 @@ import numpy as np
 
 class FastEmailPhishingDetector:
     def __init__(self, model_path='phishing_email_logreg.pkl'):
-        self.model_path = model_path
+        import os
+        # Always use absolute path based on this script's directory
+        self.model_path = os.path.join(os.path.dirname(__file__), model_path)
         self.model = None
         self.load_model()
 
