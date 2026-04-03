@@ -18,6 +18,47 @@ import api from "../api";
 // Firebase removed
 
 function Dashboard() {
+    if (loading) {
+      return (
+        <div className="space-y-8">
+          <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
+            Dashboard loaded (debug message) - if you see this, Dashboard is rendering.
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+                Threat Intelligence
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Real-time overview of your email security status.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-sm font-medium text-slate-500">Last 7 Days</span>
+            </div>
+          </div>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {Array(8).fill(0).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700">
+                <Skeleton height={32} width={32} circle={true} className="mb-4" />
+                <Skeleton height={24} width={120} className="mb-2" />
+                <Skeleton height={16} width={80} />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            <div className="lg:col-span-2 card bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 min-w-0">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Detection Trends</h3>
+              <Skeleton height={288} />
+            </div>
+            <div className="card bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 min-w-0">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Recent Alerts</h3>
+              <Skeleton count={5} height={48} className="mb-2" />
+            </div>
+          </div>
+        </div>
+      );
+    }
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [allAlertsOpen, setAllAlertsOpen] = useState(false);
@@ -69,7 +110,9 @@ function Dashboard() {
   if (error) {
     return (
       <div className="flex justify-center items-center h-full">
-        <p className="text-red-500 dark:text-red-400">Error: {error}</p>
+        <p className="text-red-500 dark:text-red-400">
+          Error: {error.message ? error.message : typeof error === 'string' ? error : JSON.stringify(error)}
+        </p>
       </div>
     );
   }
