@@ -14,6 +14,8 @@ import {
 } from "recharts";
 import PropTypes from "prop-types";
 
+import api from "../api";
+
 function Dashboard() {
     // Visible debug message for deployment verification
     const DEPLOY_COMMIT = "3441b5c1"; // Update this with the latest commit hash after each deployment
