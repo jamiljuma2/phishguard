@@ -136,24 +136,15 @@ function Navbar({ currentPage, setCurrentPage }) {
                   {link.label}
                 </button>
               ))}
-              {user ? (
-                <button
-                  onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Sign Out
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setLoginModalOpen(true);
-                    setIsOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Sign In / Sign Up
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  setLoginModalOpen(true);
+                  setIsOpen(false);
+                }}
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Sign In / Sign Up
+              </button>
             </div>
           </motion.div>
         )}
