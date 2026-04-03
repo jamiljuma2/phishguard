@@ -14,6 +14,9 @@ import {
 } from "recharts";
 
 function Dashboard() {
+    // Visible debug message for deployment verification
+    const DEPLOY_COMMIT = "3441b5c1"; // Update this with the latest commit hash after each deployment
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [allAlertsOpen, setAllAlertsOpen] = useState(false);
@@ -64,7 +67,7 @@ function Dashboard() {
       return (
         <div className="space-y-8">
           <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
-            Dashboard loaded (debug message) - if you see this, Dashboard is rendering.
+            Dashboard loaded (debug message) - commit: {DEPLOY_COMMIT}
           </div>
           <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
             <div>
@@ -126,6 +129,9 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
+        Dashboard loaded (debug message) - commit: {DEPLOY_COMMIT}
+      </div>
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
         <div>
           <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
