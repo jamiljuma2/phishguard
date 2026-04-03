@@ -75,6 +75,13 @@ def dashboard_stats():
     stats = history_utils.get_dashboard_stats(uid)
     return jsonify(stats)
 
+# Scan history endpoint for frontend
+@app.route('/history', methods=['GET'])
+def get_history():
+    uid = get_local_uid()
+    history = history_utils.load_history(uid)
+    return jsonify(history)
+
 # Entrypoint for local development (must be at end of file)
 if __name__ == '__main__':
     print("Starting Flask backend on http://0.0.0.0:5000 ...")
