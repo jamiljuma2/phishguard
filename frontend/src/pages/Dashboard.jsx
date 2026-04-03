@@ -108,12 +108,23 @@ function Dashboard() {
       );
     }
 
+
+    // If error, show a user-friendly message and fallback to default stats
     if (error) {
       return (
-        <div className="flex justify-center items-center h-full">
-          <p className="text-red-500 dark:text-red-400">
-            Error: {error.message ? error.message : typeof error === 'string' ? error : JSON.stringify(error)}
-          </p>
+        <div className="space-y-8">
+          <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
+            Dashboard is temporarily unavailable. Please check your connection or try again later.
+          </div>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {Array(8).fill(0).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700">
+                <Skeleton height={32} width={32} circle={true} className="mb-4" />
+                <Skeleton height={24} width={120} className="mb-2" />
+                <Skeleton height={16} width={80} />
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
@@ -132,9 +143,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
-        Dashboard loaded (debug message) - commit: {DEPLOY_COMMIT}
-      </div>
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
         <div>
           <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
