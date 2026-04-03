@@ -1,64 +1,33 @@
 import os
-import json
-from dotenv import load_dotenv
-
-load_dotenv()
-
-import firebase_admin
-<<<<<<< HEAD
-from email_sending.sender import send_phishing_alert_email
-import os
-import json
-from dotenv import load_dotenv
-load_dotenv()
-from threading import Thread
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from utils import preprocess_text
-import fast_url_detector
-import fast_email_detector
-import history_utils
-    if os.path.exists(MODEL_PATH):
-        try:
-            model = joblib.load(MODEL_PATH)
-            print("Model loaded successfully.")
-        except Exception as e:
-            print(f"Error loading model: {e}")
-            model = None
-    else:
-        print("Model file not found. Please train the model first.")
-
-load_model()
-
-def verify_firebase_token():
-    """Verify the Firebase ID token from the Authorization header."""
-    auth_header = request.headers.get('Authorization', '')
-    if not auth_header.startswith('Bearer '):
-        return None
-    token = auth_header.split('Bearer ')[1]
-    try:
-        decoded = auth.verify_id_token(token)
-        return decoded.get('uid')
-    except Exception:
-        return None
+    """Stub for user identification (no auth). Returns a fixed UID for demo purposes."""
+    return "demo_user"
 
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "model_loaded": model is not None})
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 8b707b27 (Fix: Ensure backend /dashboard_stats includes recent field for dashboard, code audit for Python compliance)
 @app.route('/predict', methods=['POST'])
 def predict():
-    uid = verify_firebase_token()
-    if not uid:
-        return jsonify({"error": "Authentication required"}), 401
+    print("/predict endpoint called")
+    uid = get_local_uid()
     data = request.json
+    print(f"Request data: {data}")
     if not data or 'text' not in data or 'type' not in data:
+        print("Missing required fields in request data")
         return jsonify({"error": "Missing required fields: 'text' and 'type'"}), 400
     input_text = data['text']
     input_type = data['type']  # 'email', 'sms', or 'url'
+    print(f"Input text: {input_text}, Input type: {input_type}")
     processed_text = preprocess_text(input_text)
+    print(f"Processed text: {processed_text}")
     heuristics = extract_features(input_text)
+    print(f"Heuristics: {heuristics}")
     result = {
         "result": "Unknown",
         "confidence": 0.0,
@@ -70,34 +39,39 @@ def predict():
     }
     if model:
         try:
+            print("Model loaded, running prediction...")
             prediction = model.predict([processed_text])[0]
+            print(f"Prediction: {prediction}")
             proba = model.predict_proba([processed_text])[0]
+            print(f"Probabilities: {proba}")
             result['result'] = "Phishing" if prediction == 1 else "Legitimate"
             result['confidence'] = float(max(proba))
             suspicious_words_found = [word for word in ['urgent', 'verify', 'login'] if word in input_text.lower()]
             result['suspicious_words'] = suspicious_words_found
         except Exception as e:
+            print(f"Prediction failed: {e}")
             return jsonify({"error": f"Prediction failed: {e}"}), 500
     else:
+        print("Model not loaded")
         return jsonify({"error": "Model not loaded"}), 503
     # Save to history
+    print("Saving scan to history...")
     add_scan_to_history(result, uid)
+    print("Returning result to client.")
     return jsonify(result)
+
 
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    uid = verify_firebase_token()
-    if not uid:
-        return jsonify({"error": "Authentication required"}), 401
+    uid = get_local_uid()
     return jsonify(load_history(uid))
+
 
 
 @app.route('/dashboard_stats', methods=['GET'])
 def dashboard_stats():
-    uid = verify_firebase_token()
-    if not uid:
-        return jsonify({"error": "Authentication required"}), 401
+    uid = get_local_uid()
     return jsonify(get_dashboard_stats(uid))
 
 
@@ -106,9 +80,31 @@ def dashboard_stats():
 @app.route('/<path:path>')
 def serve_frontend(path):
     if path.startswith(('api', 'predict', 'history', 'dashboard_stats', 'health')):
+
+import os
+import json
+from dotenv import load_dotenv
+load_dotenv()
+from threading import Thread
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from utils import preprocess_text
+import fast_url_detector
+import fast_email_detector
+import history_utils
+
+app = Flask(__name__)
+CORS(app)
+
+# Use fast logistic regression for email/SMS
+email_model_instance = fast_email_detector.FastEmailPhishingDetector()
+url_model_instance = fast_url_detector.FastURLPhishingDetector()
+
         return jsonify({'error': 'Not found'}), 404
     file_path = os.path.join(FRONTEND_DIST, path)
     if os.path.exists(file_path) and not os.path.isdir(file_path):
+
+@app.route('/predict', methods=['POST'])
         return send_from_directory(FRONTEND_DIST, path)
     return send_from_directory(FRONTEND_DIST, 'index.html')
 
@@ -167,11 +163,17 @@ def predict():
             'email': '',
             'result': result,
             'confidence': float(confidence),
+
+@app.route("/", methods=["GET"])
         }
     # SMS prediction (use fast email model)
+
+@app.route('/history', methods=['GET'])
     elif input_type == 'sms':
         try:
             result, confidence = email_model_instance.predict(text)
+
+@app.route('/dashboard_stats', methods=['GET'])
         except Exception as e:
             print('SMS MODEL ERROR:', str(e))
             traceback.print_exc()

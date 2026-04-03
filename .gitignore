@@ -4,11 +4,7 @@
 .env.production
 .env*.local
 
-# Firebase service account key
-serviceAccountKey.json
-**/serviceAccountKey.json
-google-services.json
-**/google-services.json
+
 
 # Python
 __pycache__/

@@ -15,22 +15,13 @@ import {
 import { AlertTriangle, CheckCircle, Globe, Mail } from "lucide-react";
 import PropTypes from "prop-types";
 import api from "../api";
-import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+// Firebase removed
 
 function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [allAlertsOpen, setAllAlertsOpen] = useState(false);
-  const [user, setUser] = useState(null);
-
-  // Track user auth state
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  // No user state needed
 
   // Use react-query for dashboard stats
   const { data: stats = {
@@ -43,13 +34,11 @@ function Dashboard() {
     legitimate_url: 0,
     recent: [],
   }, isLoading: loading, error } = useQuery({
-    queryKey: ['dashboard_stats', user?.uid],
+    queryKey: ['dashboard_stats'],
     queryFn: async () => {
-      if (!user) throw new Error('Not authenticated');
       const res = await api.get('/dashboard_stats');
       return res.data;
     },
-    enabled: !!user,
     staleTime: 1000 * 60, // 1 minute
     retry: 1,
   });
@@ -75,25 +64,7 @@ function Dashboard() {
       });
   }, [stats.recent]);
 
-  if (!user) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full text-center">
-        <p className="text-xl font-medium text-slate-700 dark:text-white mb-4">
-          Please sign in to view your dashboard.
-        </p>
-        <button
-          onClick={() => {
-            /* Trigger login modal here if desired */ alert(
-              "Sign in functionality is available via the navigation bar.",
-            );
-          }}
-          className="btn-primary px-6 py-3"
-        >
-          Sign In / Sign Up
-        </button>
-      </div>
-    );
-  }
+
 
   if (error) {
     return (

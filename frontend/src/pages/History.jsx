@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import { Search, CheckCircle, AlertTriangle } from "lucide-react";
 import api from "../api";
-import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+// Firebase removed
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -12,24 +11,15 @@ function History() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [user, setUser] = useState(null);
-
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  // No user state needed
 
   // Use react-query for scan history
   const { data: historyData = [], isLoading: loading, error } = useQuery({
-    queryKey: ['scan_history', user?.uid],
+    queryKey: ['scan_history'],
     queryFn: async () => {
-      if (!user) throw new Error('Not authenticated');
       const res = await api.get('/history');
       return res.data;
     },
-    enabled: !!user,
     staleTime: 1000 * 60, // 1 minute
     retry: 1,
   });
@@ -67,25 +57,7 @@ function History() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full text-center">
-        <p className="text-xl font-medium text-slate-700 dark:text-white mb-4">
-          Please sign in to view your scan history.
-        </p>
-        <button
-          onClick={() => {
-            /* Trigger login modal here if desired, or let Navbar handle it */ alert(
-              "Sign in functionality is available via the navigation bar.",
-            );
-          }}
-          className="btn-primary px-6 py-3"
-        >
-          Sign In / Sign Up
-        </button>
-      </div>
-    );
-  }
+
 
   if (error) {
     return (
