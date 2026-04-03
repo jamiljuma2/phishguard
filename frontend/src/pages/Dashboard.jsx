@@ -12,12 +12,54 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { AlertTriangle, CheckCircle, Globe, Mail } from "lucide-react";
-import PropTypes from "prop-types";
-import api from "../api";
-// Firebase removed
 
 function Dashboard() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [allAlertsOpen, setAllAlertsOpen] = useState(false);
+  // No user state needed
+
+  // Use react-query for dashboard stats
+  const { data: stats = {
+    total_scans: 0,
+    phishing_email: 0,
+    phishing_sms: 0,
+    phishing_url: 0,
+    legitimate_email: 0,
+    legitimate_sms: 0,
+    legitimate_url: 0,
+    recent: [],
+  }, isLoading: loading, error } = useQuery({
+    queryKey: ['dashboard_stats'],
+    queryFn: async () => {
+      const res = await api.get('/dashboard_stats');
+      return res.data;
+    },
+    staleTime: 1000 * 60, // 1 minute
+    retry: 1,
+  });
+
+  // Generate trend data for chart (last 7 scans by date)
+  const trendData = React.useMemo(() => {
+    if (!stats.recent) return [];
+    return Array(7)
+      .fill(0)
+        .map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          const day = d.toLocaleString("en-US", { weekday: "short" });
+          const dayScans = stats.recent.filter((scan) => {
+            const scanDate = new Date(scan.timestamp);
+            return scanDate.toDateString() === d.toDateString();
+          });
+          return {
+            name: day,
+            phishing: dayScans.filter((s) => s.result === "Phishing").length,
+            legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
+          };
+        });
+    }, [stats.recent]);
+
     if (loading) {
       return (
         <div className="space-y-8">
@@ -59,51 +101,16 @@ function Dashboard() {
         </div>
       );
     }
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [allAlertsOpen, setAllAlertsOpen] = useState(false);
-  // No user state needed
 
-  // Use react-query for dashboard stats
-  const { data: stats = {
-    total_scans: 0,
-    phishing_email: 0,
-    phishing_sms: 0,
-    phishing_url: 0,
-    legitimate_email: 0,
-    legitimate_sms: 0,
-    legitimate_url: 0,
-    recent: [],
-  }, isLoading: loading, error } = useQuery({
-    queryKey: ['dashboard_stats'],
-    queryFn: async () => {
-      const res = await api.get('/dashboard_stats');
-      return res.data;
-    },
-    staleTime: 1000 * 60, // 1 minute
-    retry: 1,
-  });
-
-  // Generate trend data for chart (last 7 scans by date)
-  const trendData = React.useMemo(() => {
-    if (!stats.recent) return [];
-    return Array(7)
-      .fill(0)
-      .map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        const day = d.toLocaleString("en-US", { weekday: "short" });
-        const dayScans = stats.recent.filter((scan) => {
-          const scanDate = new Date(scan.timestamp);
-          return scanDate.toDateString() === d.toDateString();
-        });
-        return {
-          name: day,
-          phishing: dayScans.filter((s) => s.result === "Phishing").length,
-          legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
-        };
-      });
-  }, [stats.recent]);
+    if (error) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-red-500 dark:text-red-400">
+            Error: {error.message ? error.message : typeof error === 'string' ? error : JSON.stringify(error)}
+          </p>
+        </div>
+      );
+    }
 
 
 
