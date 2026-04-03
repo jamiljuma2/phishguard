@@ -49,3 +49,5 @@ Thumbs.db
 
 # Scan history (contains user data)
 backend/scan_history.json
+backend/history_*.json
+backend/*.lock
