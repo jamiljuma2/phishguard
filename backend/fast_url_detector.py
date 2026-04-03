@@ -9,7 +9,16 @@ class FastURLPhishingDetector:
         self.load_model()
 
     def load_model(self):
-        self.model = joblib.load(self.model_path)
+        import os
+        try:
+            if not os.path.exists(self.model_path):
+                print(f"[ERROR] Model file not found: {self.model_path}")
+                raise FileNotFoundError(f"Model file not found: {self.model_path}")
+            self.model = joblib.load(self.model_path)
+            print(f"[INFO] Loaded model from {self.model_path}")
+        except Exception as e:
+            print(f"[ERROR] Failed to load model from {self.model_path}: {e}")
+            raise
 
     def predict(self, url):
         features = extract_features(url)
