@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { Shield, Menu, X, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
-import { auth } from "../firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import LoginModal from "./LoginModal";
+// Auth removed
 
 function Navbar({ currentPage, setCurrentPage }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,15 +11,7 @@ function Navbar({ currentPage, setCurrentPage }) {
     if (saved !== null) return saved === "dark";
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
-  const [user, setUser] = useState(null);
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  // No user state needed
 
   // Toggle Dark Mode
   useEffect(() => {
@@ -35,13 +25,7 @@ function Navbar({ currentPage, setCurrentPage }) {
 
   const toggleTheme = () => setIsDark(!isDark);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Failed to sign out", error);
-    }
-  };
+
 
   const navLinks = [
     { id: "home", label: "Analyzer" },
@@ -103,37 +87,7 @@ function Navbar({ currentPage, setCurrentPage }) {
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            {/* Profile Avatar (Mock) */}
-            {user ? (
-              <div className="flex items-center gap-4">
-                {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt="User"
-                    className="h-8 w-8 rounded-full"
-                  />
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent to-highlight flex items-center justify-center text-white font-bold text-sm">
-                    {(user.displayName || user.email || "?")
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                )}
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setLoginModalOpen(true)}
-                className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                Sign In / Sign Up
-              </button>
-            )}
+            {/* No profile or auth UI needed */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -158,10 +112,7 @@ function Navbar({ currentPage, setCurrentPage }) {
         </div>
       </div>
 
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-      />
+
 
       {/* Mobile Menu */}
       <AnimatePresence>

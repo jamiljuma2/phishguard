@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "firebase": "^12.9.0"
+  },
+  "scripts": {
+    "dev": "cd frontend && npm run dev"
   }
 }
