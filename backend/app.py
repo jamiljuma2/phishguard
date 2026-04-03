@@ -27,8 +27,45 @@ def health_check():
     return jsonify({"status": "healthy"})
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("/predict endpoint called")
-    uid = get_local_uid()
+    try:
+        print("/predict endpoint called")
+        uid = get_local_uid()
+        data = request.json
+        print(f"Request data: {data}")
+        if not data or 'text' not in data or 'type' not in data:
+            print("Missing required fields in request data")
+            return jsonify({"error": "Missing required fields: 'text' and 'type'"}), 400
+
+        input_text = data['text']
+        input_type = data['type'].lower()  # 'email', 'sms', or 'url'
+        print(f"Input text: {input_text}, Input type: {input_type}")
+        processed_text = preprocess_text(input_text)
+        print(f"Processed text: {processed_text}")
+
+        # Select model and prediction logic
+        if input_type == 'email' or input_type == 'sms':
+            label, confidence = email_model_instance.predict(input_text)
+        elif input_type == 'url':
+            label, confidence = url_model_instance.predict(input_text)
+        else:
+            print(f"Unknown input type: {input_type}")
+            return jsonify({"error": f"Unknown input type: {input_type}"}), 400
+
+        result = {
+            "result": label,
+            "confidence": confidence,
+            "input": input_text,
+            "input_type": input_type,
+            "email": data.get('email', ''),
+            "subject": data.get('subject', '')
+        }
+        print("Returning result to client.")
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+        print("Exception in /predict endpoint:", str(e))
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
 # Entrypoint for local development (must be at end of file)
 if __name__ == '__main__':
