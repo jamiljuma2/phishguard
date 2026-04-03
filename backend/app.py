@@ -12,7 +12,7 @@ import history_utils
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://phishguard-ochre.vercel.app"])
 
 # Use fast logistic regression for email/SMS
 email_model_instance = fast_email_detector.FastEmailPhishingDetector()
