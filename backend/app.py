@@ -67,15 +67,18 @@ def predict():
         traceback.print_exc()
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
-# Entrypoint for local development (must be at end of file)
-if __name__ == '__main__':
-    print("Starting Flask backend on http://0.0.0.0:5000 ...")
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+
+# Dashboard stats endpoint for frontend
+@app.route('/dashboard_stats', methods=['GET'])
+def dashboard_stats():
+    uid = get_local_uid()
+    stats = history_utils.get_dashboard_stats(uid)
+    return jsonify(stats)
 
 # Entrypoint for local development (must be at end of file)
 if __name__ == '__main__':
     print("Starting Flask backend on http://0.0.0.0:5000 ...")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
 
 
 
