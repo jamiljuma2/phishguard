@@ -136,7 +136,7 @@ function Navbar({ currentPage, setCurrentPage }) {
                   {link.label}
                 </button>
               ))}
-
+              {/* Auth removed: No Sign In/Sign Up button needed */}
             </div>
           </motion.div>
         )}

@@ -12,12 +12,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { AlertTriangle, CheckCircle, Globe, Mail } from "lucide-react";
 import PropTypes from "prop-types";
+
 import api from "../api";
-// Firebase removed
 
 function Dashboard() {
+    // Visible debug message for deployment verification
+    const DEPLOY_COMMIT = "3441b5c1"; // Update this with the latest commit hash after each deployment
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [allAlertsOpen, setAllAlertsOpen] = useState(false);
@@ -48,34 +50,91 @@ function Dashboard() {
     if (!stats.recent) return [];
     return Array(7)
       .fill(0)
-      .map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        const day = d.toLocaleString("en-US", { weekday: "short" });
-        const dayScans = stats.recent.filter((scan) => {
-          const scanDate = new Date(scan.timestamp);
-          return scanDate.toDateString() === d.toDateString();
+        .map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          const day = d.toLocaleString("en-US", { weekday: "short" });
+          const dayScans = stats.recent.filter((scan) => {
+            const scanDate = new Date(scan.timestamp);
+            return scanDate.toDateString() === d.toDateString();
+          });
+          return {
+            name: day,
+            phishing: dayScans.filter((s) => s.result === "Phishing").length,
+            legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
+          };
         });
-        return {
-          name: day,
-          phishing: dayScans.filter((s) => s.result === "Phishing").length,
-          legitimate: dayScans.filter((s) => s.result === "Legitimate").length,
-        };
-      });
-  }, [stats.recent]);
+    }, [stats.recent]);
+
+    if (loading) {
+      return (
+        <div className="space-y-8">
+          <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
+            Dashboard loaded (debug message) - commit: {DEPLOY_COMMIT}
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
+                Threat Intelligence
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Real-time overview of your email security status.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-sm font-medium text-slate-500">Last 7 Days</span>
+            </div>
+          </div>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {Array(8).fill(0).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700">
+                <Skeleton height={32} width={32} circle={true} className="mb-4" />
+                <Skeleton height={24} width={120} className="mb-2" />
+                <Skeleton height={16} width={80} />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            <div className="lg:col-span-2 card bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 min-w-0">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Detection Trends</h3>
+              <Skeleton height={288} />
+            </div>
+            <div className="card bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 min-w-0">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Recent Alerts</h3>
+              <Skeleton count={5} height={48} className="mb-2" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-red-500 dark:text-red-400">
+            Error: {error.message ? error.message : typeof error === 'string' ? error : JSON.stringify(error)}
+          </p>
+        </div>
+      );
+    }
 
 
 
   if (error) {
     return (
       <div className="flex justify-center items-center h-full">
-        <p className="text-red-500 dark:text-red-400">Error: {error}</p>
+        <p className="text-red-500 dark:text-red-400">
+          Error: {error.message ? error.message : typeof error === 'string' ? error : JSON.stringify(error)}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
+      <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center font-bold">
+        Dashboard loaded (debug message) - commit: {DEPLOY_COMMIT}
+      </div>
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 md:gap-0">
         <div>
           <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white">
